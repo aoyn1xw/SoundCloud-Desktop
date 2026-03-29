@@ -162,6 +162,19 @@ async function loadTrack(track: Track) {
 }
 
 async function hydrateTrackMetadata(urn: string, gen: number) {
+  // Check React Query cache first (zero network cost)
+  const { queryClient } = await import('../main');
+  const cached = queryClient.getQueryData<Track>(['track', urn]);
+  if (cached && gen === loadGen && currentUrn === urn) {
+    usePlayerStore.getState().replaceTrackMetadata(cached);
+    if (typeof cached.duration === 'number' && cached.duration > 0) {
+      fallbackDuration = cached.duration / 1000;
+      cachedDuration = fallbackDuration;
+      notify();
+    }
+    return;
+  }
+  // fallback to API fetch
   try {
     const freshTrack = await api<Track>(`/tracks/${encodeURIComponent(urn)}`);
     if (gen !== loadGen || currentUrn !== urn) return;

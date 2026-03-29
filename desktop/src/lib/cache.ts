@@ -18,6 +18,7 @@ let cacheBasePath: string | null = null;
 let cacheMaintenanceStarted = false;
 let lastUserActivityAt = Date.now();
 let assetsClearedDuringIdle = false;
+const pathCache = new Map<string, string>();
 
 async function getAudioDir(): Promise<string> {
   if (cacheBasePath) return cacheBasePath;
@@ -37,8 +38,11 @@ function filenameToUrn(filename: string): string | null {
 }
 
 async function filePath(urn: string): Promise<string> {
+  if (pathCache.has(urn)) return pathCache.get(urn)!;
   const dir = await getAudioDir();
-  return await join(dir, urnToFilename(urn));
+  const p = await join(dir, urnToFilename(urn));
+  pathCache.set(urn, p);
+  return p;
 }
 
 export async function getCacheTargetPath(urn: string): Promise<string> {
