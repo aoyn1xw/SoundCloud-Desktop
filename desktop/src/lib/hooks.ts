@@ -532,13 +532,6 @@ export function usePlaylistTracks(playlistUrn: string | undefined) {
     gcTime: INFINITE_GC_MS,
   });
 
-  // Auto-fetch all pages so full playlist loads without scrolling
-  useEffect(() => {
-    if (query.hasNextPage && !query.isFetchingNextPage) {
-      query.fetchNextPage();
-    }
-  }, [query.hasNextPage, query.isFetchingNextPage, query.data]);
-
   const tracks = useMemo(() => {
     return flattenCollectionPages(query.data?.pages);
   }, [query.data]);
